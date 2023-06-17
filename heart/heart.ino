@@ -8,18 +8,16 @@ Adafruit_NeoPixel left = Adafruit_NeoPixel(LENGTHLEFT, PINLEFT, NEO_GRB + NEO_KH
 #define LENGTHRIGHT      126
 Adafruit_NeoPixel right = Adafruit_NeoPixel(LENGTHRIGHT, PINRIGHT, NEO_GRB + NEO_KHZ800);
 
-// Testing variable
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(10, 6, NEO_GRB + NEO_KHZ800);
-
 // Global delays
 #define SLIDERDELAY  50 // Delay in sliderfull and sliderblock modes 
 #define RANDODELAY  150 // Delay in sliderfull and sliderblock modes 
-#define TESTDELAY 2000   // Delay for the init script
+#define TESTDELAY 500   // Delay for the init script
 
 // Iterations variables
 int travellingrandoruns = 7;
 int breathingruns = 11;
 int sliderfullruns = 10;
+int movingblock = 10;
 
 // Randomization variables
 int randomlenght() {
@@ -64,24 +62,37 @@ void setup() {
 
 void loop() {
   
-  //for (int i = 1; i < travellingrandoruns; i = i + 1) {
-  //  travellingrando(); // Tested OK
-  //}
+  for (int i = 1; i < travellingrandoruns; i = i + 1) {
+    travellingrando();
+  }
   
-  //for (int i = 1; i < breathingruns; i = i + 1) {
-  //  R = random255();
-  //  G = random255();
-  //  B = random255();
-  //  breathing(R,G,B,10); // Tested OK
-  //}
-  //for (int i = 1; i < sliderfullruns; i = i + 1) {
-  //  R = random255();
-  //  G = random255();
-  //  B = random255();
-  //  sliderfull(R,G,B); // Tested OK
-  //}
-  blackout();
-  delay(TESTDELAY);
+  for (int i = 1; i < breathingruns; i = i + 1) {
+    R = random255();
+    G = random255();
+    B = random255();
+    breathing(R,G,B,10); 
+  }
+
+  for (int i = 1; i < sliderfullruns; i = i + 1) {
+    R = random255();
+    G = random255();
+    B = random255();
+    sliderfull(R,G,B); 
+  }
+
+  for (int i = 1; i < sliderfullruns; i = i + 1) {
+    R = random255();
+    G = random255();
+    B = random255();
+    sliderfullbounce(R,G,B); 
+  }
+
+  for (int i = 1; i < sliderfullruns; i = i + 1) {
+    R = random255();
+    G = random255();
+    B = random255();
+    sliderblock(R,G,B,25); 
+  }
 };
 
 void shiftall() {
@@ -135,16 +146,20 @@ void sliderfull(int color1, int color2, int color3) {
 void sliderfullbounce(int color1, int color2, int color3) {
   // Fills the strip and drains it afterwards, opposite direction
   blackout();
-  for (int i = 0; i < 99; i = i + 1) {
+  for (int i = 0; i < 101; i = i + 1) {
     left.setPixelColor((i*left.numPixels()/100), color1, color2, color3);
+    left.setPixelColor(((i*left.numPixels()/100)-1), color1, color2, color3);
     right.setPixelColor((i*right.numPixels()/100), color1, color2, color3);
+    right.setPixelColor(((i*right.numPixels()/100)-1), color1, color2, color3);
     left.show();
     right.show();
     delay(SLIDERDELAY);
   }
-  for (int i = 100; i > 1; i = i - 1) {
+  for (int i = 101; i > 1; i = i - 1) {
     left.setPixelColor((i*left.numPixels()/100), 0, 0, 0);
     right.setPixelColor((i*right.numPixels()/100), 0, 0, 0);
+    left.setPixelColor(((i*left.numPixels()/100)+1), 0, 0, 0);
+    right.setPixelColor(((i*right.numPixels()/100)+1), 0, 0, 0);
     left.show();
     right.show();
     delay(SLIDERDELAY);
@@ -154,32 +169,33 @@ void sliderfullbounce(int color1, int color2, int color3) {
 void sliderblock(int color1, int color2, int color3, int blocksize) {
   // Slides a block of LEDs across
   blackout();
-  for (int i = 0; i < 99; i = i + 1) {
-    strip.setPixelColor((i*strip.numPixels()/100), color1, color2, color3);
-    strip.setPixelColor(((i*strip.numPixels()/100)-blocksize), 0, 0, 0);
-    strip.show();
+  int counter = 1;
+  for (int i = 0; i < left.numPixels(); i = i + 1) {
+    left.setPixelColor(i, color1, color2, color3);
+    left.setPixelColor(i-blocksize, 0, 0, 0);
+    left.show();
+    delay(SLIDERDELAY);
+  }
+  for (int i = blocksize; i > 0; i = i - 1) {
+    left.setPixelColor(left.numPixels()-i, 0, 0, 0);
+    right.setPixelColor(right.numPixels()-counter, color1, color2, color3);
+    left.show();
+    right.show();
+    counter = counter + 1;
+    delay(SLIDERDELAY);
+  }
+  for (int i = right.numPixels()-counter; i > 0; i = i - 1) {
+    right.setPixelColor(i, color1, color2, color3);
+    right.setPixelColor(i+blocksize, 0, 0, 0);
+    right.show();
+    delay(SLIDERDELAY);
+  }
+  for (int i = blocksize; i > 0; i = i - 1) {
+    right.setPixelColor(i, 0, 0, 0);
+    right.show();
     delay(SLIDERDELAY);
   }
 }
-
-void sliderblockbounce(int color1, int color2, int color3, int blocksize) {
-  // Bounces a block of LEDs across
-  blackout();
-  for (int i = 0; i < 99; i = i + 1) {
-    strip.setPixelColor((i*strip.numPixels()/100), color1, color2, color3);
-    strip.setPixelColor(((i*strip.numPixels()/100)-blocksize), 0, 0, 0);
-    strip.show();
-    delay(SLIDERDELAY);
-  }
-  for (int i = 99; i > 0; i = i - 1) {
-    strip.setPixelColor((i*strip.numPixels()/100), 0, 0, 0);
-    strip.setPixelColor(((i*strip.numPixels()/100)-blocksize), color1, color2, color3);
-    strip.show();
-    delay(SLIDERDELAY);
-  }
-}
-
-
 
 void breathing(int color1, int color2, int color3, int delayvalue) {
   // Goes from 0 to 255 power on the specified colors, back to 0
